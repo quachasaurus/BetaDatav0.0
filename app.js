@@ -29,15 +29,53 @@
 
   const prFrom = (e,f,b) => Math.min(e,f,b);
   const pickType = (e,f,b,m) => (e===1||f===1||b===1) ? "RECOVER" : MATRIX[prFrom(e,f,b)][m];
-  const capString = (t) => t==="RECOVER" ? "No climbing" : `Max V − ${CAP_DELTA[t]}`;
+  const capString = (t) => t==="RECOVER" ? "No climbing" : `Vₘₐₓ − ${CAP_DELTA[t]}`;
 
   function explain(e,f,b,m,t){
-    if(t==="RECOVER") return "One physical system is too taxed today — recovery protects consistency.";
-    if(f<=2) return "Finger readiness limits intensity today.";
-    if(b<=2) return "Body fatigue caps how hard you should go.";
-    if(m<=2) return "Lower mental bandwidth favors simpler sessions.";
-    return "This matches today’s physical and mental readiness.";
+  const pr = Math.min(e, f, b);
+
+  // Special: true "everything aligned" day (matches your unicorn vibe without changing the modal logic)
+  if (pr === 5 && m === 5) {
+    return "Everything is lining up today. If you’ve got a unicorn in mind, this is the day — take a few high-quality attempts and don’t overstay.";
   }
+
+  // Hard guardrail
+  if (t === "RECOVER") {
+    return "One system is too taxed today. Even if parts of you feel okay, pushing now risks stealing from tomorrow.";
+  }
+
+  // Limiter-first explanations (most useful for prevention)
+  if (f <= 2) {
+    return "Fingers are the limiter today. You’ve got some energy and body capacity, but this isn’t a day to load grips—keep it smooth and low-stress.";
+  }
+  if (b <= 2) {
+    return "Body/back is the limiter today. You can still climb, but keep intensity and attempts low—avoid big tension moves and stop early.";
+  }
+  if (m <= 2) {
+    return "Focus is limited today. Keep it simple: easy wins, clean movement, longer rests, and leave before the session gets messy.";
+  }
+
+  // Archetype-specific (covers the remaining cases so it never feels generic)
+  switch (t) {
+    case "MOVE":
+      return "Physical capacity is limited, but you can still get a productive session. Think flow and movement quality—easy terrain, low effort, high control.";
+    case "TECH":
+      return "You’re capable of climbing today, but the best value is precision over power. Use this as a quality session: feet, positions, and smooth execution.";
+    case "VOLUME":
+      return "You’re good enough for mileage. Keep it low-pressure and sustainable—steady movement, real rests, stop before quality drops.";
+    case "BALANCED":
+      return "Nothing is strongly limiting today. Mix a few harder tries with easier wins—stay honest about fatigue and keep the session tidy.";
+    case "PROJECT":
+      return "You’ve got enough body and focus for a narrow project. Pick 1–2 problems, rest fully, and keep attempts high-quality.";
+    case "SEND":
+      return "You’re in a good window to try hard. Take a small number of serious attempts with full recovery—send energy, not send volume.";
+    case "BANK":
+      return "You’re capable today, but there’s no need to empty the tank. A short, clean session keeps momentum without cost.";
+    default:
+      return "This matches today’s physical and mental readiness.";
+  }
+}
+
 
   const el = {
     topHelper:$("topHelper"),
