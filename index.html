@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Beta Data</title>
+  <title>Beta Data v0.01</title>
   <style>
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; max-width: 760px; margin: 0 auto; padding: 18px; }
     h1 { margin: 0 0 8px; }
@@ -26,15 +26,34 @@
 
     ul { margin: 8px 0 0 18px; }
     hr { border: none; border-top: 1px solid #eee; margin: 16px 0; }
-    .hidden { display: none; }
+    .hidden { display: none !important; }
 
     textarea { width: 100%; margin-top: 6px; padding: 10px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit; }
+
+    .betaTitle { font-size: 20px; font-weight: 950; margin-bottom: 10px; }
+
+    /* 🦄 Unicorn modal */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 999;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 14px;
+      padding: 22px;
+      max-width: 440px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    }
+    .modal h2 { margin-top: 0; }
   </style>
 </head>
 <body>
 
-<h1>Beta Data</h1>
-<div class="muted">Rate how you feel right now (1–5). Then get today’s beta.</div>
+<h1>Beta Data <span class="muted small">v0.01</span></h1>
+<div id="topHelper" class="muted">Rate how you feel right now (1–5). Then get today’s beta.</div>
 
 <div id="screenInput" class="card">
   <div class="row">
@@ -65,9 +84,9 @@
 </div>
 
 <div id="screenOutput" class="card hidden">
-  <div id="sessionTitle" style="font-size:20px;font-weight:950;"></div>
+  <div class="betaTitle">Your Beta Today:</div>
 
-  <!-- NEW: one-line reason (added, nothing else changed) -->
+  <div id="sessionTitle" style="font-size:20px;font-weight:950;"></div>
   <div id="sessionWhy" class="muted small" style="margin-top:4px;"></div>
 
   <div style="margin-top:12px;font-weight:950;">Do</div>
@@ -84,24 +103,15 @@
   <hr />
 
   <div style="font-weight:950;">Quick feedback</div>
-  <div class="muted small">Did this feel right after your session?</div>
+  <div class="muted small">Did you use the beta?</div>
 
   <div class="btnRow" style="margin-top:8px;">
-    <button id="yesBtn">👍 Yes</button>
-    <button id="noBtn">👎 No</button>
+    <button id="yesBtn">Yes</button>
+    <button id="noBtn">No</button>
   </div>
 
-  <div id="noFollowup" class="hidden">
-    <div class="muted small" style="margin-top:10px;">What was off?</div>
-    <div class="btnRow" style="margin-top:6px;">
-      <button class="whyNo" data-reason="Too easy">Too easy</button>
-      <button class="whyNo" data-reason="Too hard">Too hard</button>
-      <button class="whyNo" data-reason="Wrong kind">Wrong kind</button>
-    </div>
-  </div>
-
-  <div style="margin-top:12px;font-weight:950;">Overall comments (optional)</div>
-  <textarea id="commentBox" rows="3" placeholder="Anything you noticed, liked, or would change?"></textarea>
+  <div style="margin-top:12px;font-weight:950;">Comments (optional)</div>
+  <textarea id="commentBox" rows="3" placeholder="Anything you noticed or want to share?"></textarea>
 
   <div class="btnRow" style="margin-top:10px;">
     <button id="saveFeedbackBtn">Save feedback</button>
@@ -115,6 +125,16 @@
   </div>
   <div id="savedWrap" class="hidden" style="margin-top:10px;">
     <textarea id="savedDump" rows="10" readonly></textarea>
+  </div>
+</div>
+
+<!-- 🦄 Unicorn easter egg -->
+<div id="unicornModal" class="overlay hidden">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h2>🌈🦄</h2>
+    <p><strong>Today you followed a unicorn and found the gold at the end of the rainbow!</strong></p>
+    <p>Treasure the day and rock on!</p>
+    <button id="closeUnicorn">Send it! 🤘</button>
   </div>
 </div>
 
