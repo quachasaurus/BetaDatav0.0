@@ -1,4 +1,4 @@
-# BetaDatav0.0
+# BetaDatav0.01
 You've been chosen as a BETA tester ;-)
 
 1. Before each session open index.html and fill out how you're feeling on each category truthfully
