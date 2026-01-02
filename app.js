@@ -107,6 +107,8 @@ const el = {
     yesBtn:$("yesBtn"),
     noBtn:$("noBtn"),
     commentBox:$("commentBox"),
+    noExplainWrap:$("noExplainWrap"),
+    noExplainBox:$("noExplainBox"),
     saveFeedbackBtn:$("saveFeedbackBtn"),
     copyFeedbackBtn:$("copyFeedbackBtn"),
     logged:$("logged"),
@@ -174,6 +176,12 @@ applyModeUI();
     el.noBtn.classList.toggle("selected", val === false);
     el.yesBtn.classList.toggle("dim", val === false);
     el.noBtn.classList.toggle("dim", val === true);
+
+    // Show "what did you do instead?" only when user selects No
+    if (el.noExplainWrap) {
+      el.noExplainWrap.classList.toggle("hidden", val !== false);
+      if (val !== false && el.noExplainBox) el.noExplainBox.value = "";
+    }
   }
   el.yesBtn.onclick = () => { setUsedBeta(true); el.logged.textContent = ""; };
   el.noBtn.onclick  = () => { setUsedBeta(false); el.logged.textContent = ""; };
@@ -370,15 +378,13 @@ function renderDoAvoid(t){
     }
 
     const entry = {
-      ts: new Date().toISOString(),
-      inputs: lastContext.inputs,
-      pr: lastContext.pr,
-      mr: lastContext.mr,
-      archetype: lastContext.archetype,
-      cap: lastContext.cap,
-      usedBeta,
-      comment: el.commentBox.value.trim()
-    };
+  ts: new Date().toISOString(),
+  ...lastContext,
+  usedBeta,
+  didInstead: (el.noExplainBox ? el.noExplainBox.value.trim() : ""),
+  comment: el.commentBox.value.trim()
+};
+
 
     saveFeedback(entry);
     el.logged.textContent = "Feedback saved on this device.";
