@@ -26,6 +26,18 @@
     SEND:{title:"🟪 Performance Day",do:["Long warm-up","Few high-quality send attempts","Stop early when quality drops"],avoid:["Overstaying","Ignoring discomfort","Turning sends into volume"]},
     BANK:{title:"🟩 Bank the Day",do:["Short, clean session","Technique polish","Leave feeling underworked"],avoid:["Forcing psyche","Turning it into a grind","Chasing a send out of obligation"]}
   };
+// Workout-mode copy: only swaps Do/Avoid lists (titles/why/caps stay the same)
+const WORKOUT_COPY = {
+  RECOVER:{do:["Walk + mobility (10–20 min)","Gentle yoga or stretching","Optional: light shoulder/scap prep"],avoid:["Hard training","Max effort","“Since I’m here…” decisions"]},
+  MOVE:{do:["Easy cardio (10–20 min)","Mobility + light movement circuits","Leave feeling looser than you started"],avoid:["Intervals","Heavy lifting","Anything that spikes fatigue"]},
+  TECH:{do:["Shoulder + core control (bands / bodyweight)","Mobility with slow control","Practice clean movement patterns"],avoid:["High-effort sets","Grip-heavy pulling","Training to failure"]},
+  VOLUME:{do:["Moderate full-body work at easy effort","Leg + core stability focus","Stop before fatigue creeps in"],avoid:["Max lifts","High volume to burn","Grip-intensive pulling"]},
+  BALANCED:{do:["Moderate strength or conditioning (submax)","A few quality sets with real rests","Finish with mobility"],avoid:["Chasing PRs","Back-to-back grinders","Turning it into a long session"]},
+  PROJECT:{do:["Pick 1–2 focus lifts/movements","Full rests, high-quality reps","Keep volume tight"],avoid:["Adding “just one more” exercises","High fatigue finishers","Grip-heavy max pulling"]},
+  SEND:{do:["High-quality efforts, low total volume","Long warm-up + full rests","Stop early while sharp"],avoid:["Too many heavy attempts","Failure reps","Overstaying once form drops"]},
+  BANK:{do:["Short, clean maintenance session","Light technique or accessories","Leave feeling underworked"],avoid:["Grinding","Obligation training","Turning it into a test day"]}
+};
+
 
   const prFrom = (e,f,b) => Math.min(e,f,b);
   const pickType = (e,f,b,m) => (e===1||f===1||b===1) ? "RECOVER" : MATRIX[prFrom(e,f,b)][m];
@@ -96,6 +108,10 @@
     doList:$("doList"),
     avoidList:$("avoidList"),
     capText:$("capText"),
+
+    // Mode toggle (Output screen)
+    modeClimbBtn:$("modeClimbBtn"),
+    modeWorkoutBtn:$("modeWorkoutBtn"),
     yesBtn:$("yesBtn"),
     noBtn:$("noBtn"),
     commentBox:$("commentBox"),
@@ -105,6 +121,13 @@
     toggleSavedBtn:$("toggleSavedBtn"),
     savedWrap:$("savedWrap"),
     savedDump:$("savedDump"),
+
+    // ℹ️ Readiness info modal
+    infoModal:$("infoModal"),
+    infoTitle:$("infoTitle"),
+    infoBody:$("infoBody"),
+    closeInfo:$("closeInfo"),
+    infoBtns: document.querySelectorAll(".infoBtn"),
     unicornModal:$("unicornModal"),
     closeUnicorn:$("closeUnicorn")
   };
@@ -124,6 +147,31 @@
     el.body.addEventListener(evt,sync);
     el.mental.addEventListener(evt,sync);
   });
+
+// Mode toggle state (default: Climbing)
+let mode = "climb"; // "climb" | "workout"
+let lastType = null; // most recent archetype, used when toggling
+
+function applyModeUI(){
+  if(!el.modeClimbBtn || !el.modeWorkoutBtn) return;
+  el.modeClimbBtn.classList.toggle("selected", mode === "climb");
+  el.modeWorkoutBtn.classList.toggle("selected", mode === "workout");
+  el.modeClimbBtn.classList.toggle("dim", mode === "workout");
+  el.modeWorkoutBtn.classList.toggle("dim", mode === "climb");
+}
+
+function setMode(next){
+  mode = next;
+  applyModeUI();
+  if(lastType){
+    renderDoAvoid(lastType);
+  }
+}
+
+if(el.modeClimbBtn) el.modeClimbBtn.onclick = () => setMode("climb");
+if(el.modeWorkoutBtn) el.modeWorkoutBtn.onclick = () => setMode("workout");
+applyModeUI();
+
   sync();
 
   // Feedback selection UI state
@@ -152,6 +200,88 @@
     });
   }
 
+  // ℹ️ Readiness info content + modal handlers
+  const READINESS_INFO = {
+    energy: {
+      title: "Energy",
+      items: [
+        ["5", "Fully charged", "Rested and fueled. Warm-up feels easy and you don’t fade late."],
+        ["4", "Good", "Plenty to work with. You might tire eventually, but not early."],
+        ["3", "Okay", "You can climb, but pacing matters. Rushing will cost you."],
+        ["2", "Low", "Energy drops quickly once you start. Pushing will shorten the session."],
+        ["1", "Depleted", "Run-down or foggy. Even easy climbing feels heavy."]
+      ],
+      footer: "Think about how you feel after warming up, not how motivated you are."
+    },
+    fingers: {
+      title: "Fingers / Joints",
+      items: [
+        ["5", "Bulletproof", "No soreness or warning signs. You don’t think about your fingers."],
+        ["4", "Good", "Slight stiffness early, gone after warm-up. Loading feels okay if managed."],
+        ["3", "Aware", "Noticeable soreness or tightness. Loading feels costly but possible."],
+        ["2", "Sensitive", "Ongoing soreness or irritation. Crimping feels sketchy."],
+        ["1", "Injured", "Sharp pain, swelling, or known injury. Loading would make it worse."]
+      ],
+      footer: "If you’re asking “will this be okay?”, it’s probably a 3 or lower."
+    },
+    body: {
+      title: "Body / Back",
+      items: [
+        ["5", "Fresh", "No soreness or restriction. Big moves feel controlled."],
+        ["4", "Good", "Minor tightness, not limiting. You can engage normally."],
+        ["3", "Tight", "Stiffness or DOMS. Hard to maintain tension late."],
+        ["2", "Fatigued", "Heavy soreness or nagging tightness. Big moves feel risky."],
+        ["1", "Painful", "Pain with movement or restricted range."]
+      ],
+      footer: "Rate how your body feels moving, not standing still."
+    },
+    mental: {
+      title: "Mental",
+      items: [
+        ["5", "Locked in", "Calm, focused, intentional. You can rest and commit fully."],
+        ["4", "Good", "Motivated and mostly focused. Minor frustration is manageable."],
+        ["3", "Neutral", "Focus comes and goes. Easy to drift without structure."],
+        ["2", "Scattered", "Distracted or irritable. Hard to rest or commit."],
+        ["1", "Fried", "Emotionally drained or stressed. Decision-making is poor."]
+      ],
+      footer: "This is about bandwidth, not stoke."
+    }
+  };
+
+  function closeInfo(){
+    if (!el.infoModal) return;
+    el.infoModal.classList.add("hidden");
+  }
+
+  function openInfo(key){
+    const cfg = READINESS_INFO[key];
+    if (!cfg || !el.infoModal) return;
+
+    if (el.infoTitle) el.infoTitle.textContent = cfg.title;
+
+    if (el.infoBody) {
+      const html = cfg.items.map(([n, label, desc]) =>
+        `<p style="margin:10px 0;"><strong>${n} — ${label}</strong><br>${desc}</p>`
+      ).join("");
+      el.infoBody.innerHTML = html + `<p class="muted small" style="margin-top:12px;">${cfg.footer}</p>`;
+    }
+
+    el.infoModal.classList.remove("hidden");
+  }
+
+  if (el.closeInfo) el.closeInfo.onclick = closeInfo;
+  if (el.infoModal) {
+    el.infoModal.addEventListener("click", (e) => {
+      if (e.target === el.infoModal) closeInfo();
+    });
+  }
+  if (el.infoBtns && el.infoBtns.length) {
+    el.infoBtns.forEach((btn) => {
+      btn.addEventListener("click", () => openInfo(btn.dataset.info));
+    });
+  }
+
+
   function loadFeedback(){
     try { return JSON.parse(localStorage.getItem(FEEDBACK_KEY) || "[]"); }
     catch { return []; }
@@ -162,6 +292,14 @@
     localStorage.setItem(FEEDBACK_KEY, JSON.stringify(arr));
     return arr.length;
   }
+
+
+function renderDoAvoid(t){
+  const src = (mode === "workout") ? WORKOUT_COPY[t] : COPY[t];
+  if(!src) return;
+  el.doList.innerHTML = src.do.map(x=>`<li>${x}</li>`).join("");
+  el.avoidList.innerHTML = src.avoid.map(x=>`<li>${x}</li>`).join("");
+}
 
   el.getBetaBtn.onclick = () => {
     const e=+el.energy.value, f=+el.fingers.value, b=+el.body.value, m=+el.mental.value;
@@ -176,8 +314,9 @@
     // Fill output
     el.sessionTitle.textContent = COPY[t].title;
     el.sessionWhy.textContent = explain(e,f,b,m,t);
-    el.doList.innerHTML = COPY[t].do.map(x=>`<li>${x}</li>`).join("");
-    el.avoidList.innerHTML = COPY[t].avoid.map(x=>`<li>${x}</li>`).join("");
+    // Render Do/Avoid based on current mode
+    lastType = t;
+    renderDoAvoid(t);
     el.capText.textContent = cap;
 
     // Save context for feedback (NO UI change)
