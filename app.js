@@ -43,53 +43,45 @@ const WORKOUT_COPY = {
   const pickType = (e,f,b,m) => (e===1||f===1||b===1) ? "RECOVER" : MATRIX[prFrom(e,f,b)][m];
   const capString = (t) => t==="RECOVER" ? "No climbing" : `Vₘₐₓ − ${CAP_DELTA[t]}`;
 
-  function explain(e,f,b,m,t){
-  const pr = Math.min(e, f, b);
+  // ℹ️ Why-today detail (shown via info button next to the Why today line)
+  const WHY_DETAIL = {
+    RECOVER: `One or more systems are too taxed to benefit from training right now. Pushing through would create cost without meaningful upside. Today’s value comes from restoring capacity and letting things settle so future sessions can be productive. If you finish feeling calmer and looser than when you started, you did it right.`,
+    MOVE: `Your readiness supports movement, but not load. This is a day to stay loose, explore positions, and let your body warm into itself without pressure. If you start treating movement as training or feel compelled to escalate difficulty, you’ve gone beyond today’s intent. The goal is to leave feeling better than you arrived.`,
+    TECH: `This session should feel deliberate and light, not hard-but-clean. You’re here to notice feet, body position, and timing—not to prove strength or push limits. If you catch yourself over-gripping, muscling through moves, or stacking attempts, you’ve drifted off task. End the session while precision still feels easy and repeatable.`,
+    VOLUME: `Volume today is about accumulating quality movement without fatigue. You should feel capable of repeating what you’re doing again tomorrow. If you’re getting pumped, rushing rests, or justifying "one more" because you’re already tired, the session has become too costly. The win is stopping before quality drops, not after.`,
+    BALANCED: `This is a moderation day, not an indecisive one. You’re aiming for a mix of effort and ease, with neither dominating the session. If everything feels hard, you’re overreaching; if everything feels trivial, you’re underusing the day. Finish feeling satisfied but not spent, with enough clarity to recognize when it was time to stop.`,
+    PROJECT: `Today supports focused effort, but only in small doses. Progress comes from quality attempts with full recovery, not from volume or persistence. If you start adding problems, shortening rests, or pushing through declining quality, the session has lost its edge. The goal is clarity and learning, not exhaustion.`,
+    SEND: `Your readiness supports high-quality performance, but only briefly. This is a day to show up prepared, take a few serious attempts, and then step away while things still feel sharp. If you stay hoping something will turn around, you’re likely giving back what you earned. Ending early is part of executing the day well.`,
+    BANK: `Today is about preservation, even if you feel good. The goal isn’t to capitalize on energy; it’s to protect it. If you start chasing difficulty out of obligation or "because it’s there," you’re undermining the purpose. Success looks like leaving underworked, confident you’ve saved capacity for later.`
+  };
 
-  // Special: true "everything aligned" day (matches your unicorn vibe without changing the modal logic)
-  if (pr === 5 && m === 5) {
-    return "Everything is lining up today. If you’ve got a unicorn in mind, this is the day — take a few high-quality attempts and don’t overstay.";
+ 
+  // Why today (one sentence in the UI). Use the info button to expand.
+  function explain(e, f, b, m, t) {
+    switch (t) {
+      case "RECOVER":
+        return "You’re too taxed to benefit from training today—recovery protects tomorrow.";
+      case "MOVE":
+        return "You can move today, but loading will cost you—keep it light and leave better.";
+      case "TECH":
+        return "Today is for precision and control, not effort—stay light and deliberate.";
+      case "VOLUME":
+        return "You can accumulate quality reps today, as long as you avoid fatigue and stop early.";
+      case "BALANCED":
+        return "Nothing is strongly limiting—mix effort and ease, and keep the session tidy.";
+      case "PROJECT":
+        return "You have a window for focused effort—keep it narrow and protect attempt quality.";
+      case "SEND":
+        return "You’re primed to try hard—take a few serious attempts and stop while sharp.";
+      case "BANK":
+        return "You’re capable today, but there’s no need to spend it—save more for later.";
+      default:
+        return "This matches today’s physical and mental readiness.";
+    }
   }
 
-  // Hard guardrail
-  if (t === "RECOVER") {
-    return "One system is too taxed today. Even if parts of you feel okay, pushing now risks stealing from tomorrow.";
-  }
 
-  // Limiter-first explanations (most useful for prevention)
-  if (f <= 2) {
-    return "Fingers are the limiter today. You’ve got some energy and body capacity, but this isn’t a day to load grips—keep it smooth and low-stress.";
-  }
-  if (b <= 2) {
-    return "Body/back is the limiter today. You can still climb, but keep intensity and attempts low—avoid big tension moves and stop early.";
-  }
-  if (m <= 2) {
-    return "Focus is limited today. Keep it simple: easy wins, clean movement, longer rests, and leave before the session gets messy.";
-  }
-
-  // Archetype-specific (covers the remaining cases so it never feels generic)
-  switch (t) {
-    case "MOVE":
-      return "Physical capacity is limited, but you can still get a productive session. Think flow and movement quality—easy terrain, low effort, high control.";
-    case "TECH":
-      return "You’re capable of climbing today, but the best value is precision over power. Use this as a quality session: feet, positions, and smooth execution.";
-    case "VOLUME":
-      return "You’re good enough for mileage. Keep it low-pressure and sustainable—steady movement, real rests, stop before quality drops.";
-    case "BALANCED":
-      return "Nothing is strongly limiting today. Mix a few harder tries with easier wins—stay honest about fatigue and keep the session tidy.";
-    case "PROJECT":
-      return "You’ve got enough body and focus for a narrow project. Pick 1–2 problems, rest fully, and keep attempts high-quality.";
-    case "SEND":
-      return "You’re in a good window to try hard. Take a small number of serious attempts with full recovery—send energy, not send volume.";
-    case "BANK":
-      return "You’re capable today, but there’s no need to empty the tank. A short, clean session keeps momentum without cost.";
-    default:
-      return "This matches today’s physical and mental readiness.";
-  }
-}
-
-
-  const el = {
+const el = {
     topHelper:$("topHelper"),
     screenInput:$("screenInput"),
     screenOutput:$("screenOutput"),
@@ -254,6 +246,18 @@ applyModeUI();
   }
 
   function openInfo(key){
+    // "Why today" expanded info (uses the same modal as readiness sliders)
+    if(key === "why"){
+      if (!el.infoModal) return;
+      const t = lastType;
+      if (el.infoTitle) el.infoTitle.textContent = "Why today";
+      if (el.infoBody) {
+        const p = (t && WHY_DETAIL[t]) ? WHY_DETAIL[t] : "Get today’s beta first.";
+        el.infoBody.innerHTML = `<p style="margin:10px 0;">${p}</p>`;
+      }
+      el.infoModal.classList.remove("hidden");
+      return;
+    }
     const cfg = READINESS_INFO[key];
     if (!cfg || !el.infoModal) return;
 
