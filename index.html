@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Beta Data v0.01</title>
+  <title>Beta Data v0.02</title>
   <style>
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; max-width: 760px; margin: 0 auto; padding: 18px; }
     h1 { margin: 0 0 8px; }
@@ -48,34 +48,50 @@
       box-shadow: 0 20px 50px rgba(0,0,0,0.25);
     }
     .modal h2 { margin-top: 0; }
+
+    /* ℹ️ Readiness info */
+    .labelWrap { display: flex; align-items: center; gap: 6px; }
+    .infoBtn {
+      width: 26px; height: 26px;
+      border-radius: 999px;
+      border: 1px solid #ddd;
+      background: #fff;
+      font-weight: 900;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+    }
+    .infoBtn:active { transform: scale(0.98); }
+    #infoModal .modal { text-align: left; max-height: 70vh; overflow: auto; }
+    #infoModal h2 { text-align: center; }
   </style>
 </head>
 <body>
 
-<h1>Beta Data <span class="muted small">v0.01</span></h1>
+<h1>Beta Data <span class="muted small">v0.02</span></h1>
 <div id="topHelper" class="muted">Rate how you feel right now (1–5). Then get today’s beta.</div>
 
 <div id="screenInput" class="card">
   <div class="row">
-    <label>Energy</label>
+    <span class="labelWrap"><label>Energy</label><button class="infoBtn" type="button" data-info="energy" aria-label="Energy info">ⓘ</button></span>
     <input id="energy" type="range" min="1" max="5" value="3" />
     <span id="energyVal" class="pill">3</span>
   </div>
 
   <div class="row">
-    <label>Fingers / Joints</label>
+    <span class="labelWrap"><label>Fingers / Joints</label><button class="infoBtn" type="button" data-info="fingers" aria-label="Fingers info">ⓘ</button></span>
     <input id="fingers" type="range" min="1" max="5" value="3" />
     <span id="fingersVal" class="pill">3</span>
   </div>
 
   <div class="row">
-    <label>Body / Back</label>
+    <span class="labelWrap"><label>Body / Back</label><button class="infoBtn" type="button" data-info="body" aria-label="Body info">ⓘ</button></span>
     <input id="body" type="range" min="1" max="5" value="3" />
     <span id="bodyVal" class="pill">3</span>
   </div>
 
   <div class="row">
-    <label>Mental</label>
+    <span class="labelWrap"><label>Mental</label><button class="infoBtn" type="button" data-info="mental" aria-label="Mental info">ⓘ</button></span>
     <input id="mental" type="range" min="1" max="5" value="3" />
     <span id="mentalVal" class="pill">3</span>
   </div>
@@ -89,7 +105,12 @@
   <div id="sessionTitle" style="font-size:20px;font-weight:950;"></div>
   <div id="sessionWhy" class="muted small" style="margin-top:4px;"></div>
 
-  <div style="margin-top:12px;font-weight:950;">Do</div>
+  
+  <div class="btnRow" style="margin-top:10px;">
+    <button id="modeClimbBtn" class="selected">Climbing</button>
+    <button id="modeWorkoutBtn">Workout</button>
+  </div>
+<div style="margin-top:12px;font-weight:950;">Do</div>
   <ul id="doList"></ul>
 
   <div style="margin-top:12px;font-weight:950;">Avoid</div>
@@ -125,6 +146,18 @@
   </div>
   <div id="savedWrap" class="hidden" style="margin-top:10px;">
     <textarea id="savedDump" rows="10" readonly></textarea>
+  </div>
+</div>
+
+
+<!-- ℹ️ Readiness info -->
+<div id="infoModal" class="overlay hidden">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+    <h2 id="infoTitle">Info</h2>
+    <div id="infoBody" class="muted small"></div>
+    <div style="text-align:center; margin-top: 14px;">
+      <button id="closeInfo">Got it</button>
+    </div>
   </div>
 </div>
 
